@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export DENO_INSTALL=@prefix@
+@prefix@/bin/deno "$@"

@@ -31,7 +31,8 @@ def data_path():
 
 # [(<boost-version>, <compiler>-head)]
 def get_boost_head_versions():
-    lines = open(os.path.join(build_path(), 'boost-head', 'VERSIONS')).readlines()
+    lines = open(os.path.join(
+        build_path(), 'boost-head', 'VERSIONS')).readlines()
     return [tuple(line.split()) for line in lines if len(line.strip()) != 0]
 
 
@@ -128,7 +129,7 @@ def format_value(value, **kwargs):
 
 class Switches(object):
     def resolve_conflicts(self, pairs, group):
-        return [(p[0], merge(p[1], { 'group': group })) for p in pairs]
+        return [(p[0], merge(p[1], {'group': group})) for p in pairs]
 
     def make_c(self):
         pairs = [
@@ -253,11 +254,16 @@ class Switches(object):
         return self.resolve_conflicts(pairs, 'std-cxx')
 
     def make_boost(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
-        gcc_vers = sort_version(get_gcc_versions(includes_gcc_1=False, with_head=True))
-        clang_vers = sort_version(get_generic_versions('clang', with_head=True))
-        zapcc_vers = sort_version(get_generic_versions('zapcc', with_head=False))
-        compiler_vers = [('gcc', v) for v in gcc_vers] + [('clang', v) for v in clang_vers] + [('zapcc', v) for v in zapcc_vers]
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
+        gcc_vers = sort_version(get_gcc_versions(
+            includes_gcc_1=False, with_head=True))
+        clang_vers = sort_version(
+            get_generic_versions('clang', with_head=True))
+        zapcc_vers = sort_version(
+            get_generic_versions('zapcc', with_head=False))
+        compiler_vers = [('gcc', v) for v in gcc_vers] + [('clang', v)
+                                                          for v in clang_vers] + [('zapcc', v) for v in zapcc_vers]
 
         boost_ver_set = set(get_boost_versions_with_head())
         boost_libs = {}
@@ -265,9 +271,12 @@ class Switches(object):
             for c, cv in compiler_vers:
                 if (bv, c, cv) not in boost_ver_set:
                     continue
-                path = os.path.join(data_path(), 'boost-{bv}/{c}-{cv}/lib/libboost_*.so'.format(**locals()))
-                path2 = os.path.join(data_path(), 'boost-{bv}/{c}-{cv}/lib/libboost_*.a'.format(**locals()))
-                libs = sorted(os.path.splitext(os.path.basename(a))[0] for a in glob.glob(path) + glob.glob(path2))
+                path = os.path.join(
+                    data_path(), 'boost-{bv}/{c}-{cv}/lib/libboost_*.so'.format(**locals()))
+                path2 = os.path.join(
+                    data_path(), 'boost-{bv}/{c}-{cv}/lib/libboost_*.a'.format(**locals()))
+                libs = sorted(os.path.splitext(os.path.basename(a))[
+                              0] for a in glob.glob(path) + glob.glob(path2))
                 boost_libs[(bv, c, cv)] = libs
 
         result = []
@@ -302,14 +311,19 @@ class Switches(object):
                     'display-name': 'Boost {bv}',
                     'display-flags': '-I/opt/wandbox/boost-{bv}/{c}-{cv}/include',
                 }), bv=bv, c=c, cv=cv))
-            result.append(self.resolve_conflicts(pairs, 'boost-{c}-{cv}'.format(c=c, cv=cv)))
+            result.append(self.resolve_conflicts(
+                pairs, 'boost-{c}-{cv}'.format(c=c, cv=cv)))
         return merge(*result)
 
     def make_boost_header(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
-        gcc_vers = ['head']  # sort_version(get_generic_versions('gcc', with_head=True))
-        clang_vers = ['head']  # sort_version(get_generic_versions('clang', with_head=True))
-        compiler_vers = [('gcc', v) for v in gcc_vers] + [('clang', v) for v in clang_vers]
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
+        # sort_version(get_generic_versions('gcc', with_head=True))
+        gcc_vers = ['head']
+        # sort_version(get_generic_versions('clang', with_head=True))
+        clang_vers = ['head']
+        compiler_vers = [('gcc', v) for v in gcc_vers] + \
+            [('clang', v) for v in clang_vers]
 
         boost_ver_set = set(get_boost_versions_with_head())
         result = []
@@ -332,7 +346,8 @@ class Switches(object):
                     'display-flags': '-I/opt/wandbox/boost-{bv}/{c}-{cv}/include',
                     'runtime': True,
                 }), bv=bv, c=c, cv=cv))
-            result.append(self.resolve_conflicts(pairs, 'boost-{c}-{cv}-header'.format(c=c, cv=cv)))
+            result.append(self.resolve_conflicts(
+                pairs, 'boost-{c}-{cv}-header'.format(c=c, cv=cv)))
         return merge(*result)
 
     def make_pedantic(self):
@@ -429,9 +444,11 @@ class Switches(object):
             self.make_c(),
             self.make_cxx())
 
+
 class Compilers(object):
     def make_gcc_c(self):
-        gcc_vers = sort_version(get_gcc_versions(includes_gcc_1=True, with_head=True), reverse=True)
+        gcc_vers = sort_version(get_gcc_versions(
+            includes_gcc_1=True, with_head=True), reverse=True)
 
         compilers = []
         for cv in gcc_vers:
@@ -463,12 +480,14 @@ class Compilers(object):
 
                 # pedantic
                 if cmpver(cv, '>=', '4.5.4'):
-                    switches += ["cpp-no-pedantic", "cpp-pedantic", "cpp-pedantic-errors"]
+                    switches += ["cpp-no-pedantic",
+                                 "cpp-pedantic", "cpp-pedantic-errors"]
 
             # head specific
             if cv == 'head':
                 display_name = 'gcc HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/gcc --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/gcc --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'gcc'
                 version_command = ['/bin/echo', '{cv}']
@@ -506,7 +525,8 @@ class Compilers(object):
         return compilers
 
     def make_gcc_pp(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
         gcc_vers = ['head']
 
         boost_ver_set = set(get_boost_versions_with_head())
@@ -519,7 +539,9 @@ class Compilers(object):
                     continue
                 xs.append('{bv}'.format(bv=bv))
             nothing = ['boost-nothing-gcc-{cv}-header'.format(cv=cv)]
-            boost_switches[cv] = nothing + ['boost-{x}-gcc-{cv}-header'.format(x=x, cv=cv) for x in sort_version(xs)]
+            boost_switches[cv] = nothing + \
+                ['boost-{x}-gcc-{cv}-header'.format(x=x, cv=cv)
+                 for x in sort_version(xs)]
 
         compilers = []
         for cv in gcc_vers:
@@ -539,7 +561,8 @@ class Compilers(object):
             # head specific
             if cv == 'head':
                 display_name = 'gcc HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/gcc --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/gcc --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'gcc'
                 version_command = ['/bin/echo', '{cv}']
@@ -567,8 +590,10 @@ class Compilers(object):
         return compilers
 
     def make_gcc(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
-        gcc_vers = sort_version(get_gcc_versions(includes_gcc_1=False, with_head=True), reverse=True)
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
+        gcc_vers = sort_version(get_gcc_versions(
+            includes_gcc_1=False, with_head=True), reverse=True)
 
         boost_ver_set = set(get_boost_versions_with_head())
         # boost versions
@@ -580,7 +605,9 @@ class Compilers(object):
                     continue
                 xs.append('{bv}'.format(bv=bv))
             nothing = ['boost-nothing-gcc-{cv}'.format(cv=cv)]
-            boost_switches[cv] = nothing + ['boost-{x}-gcc-{cv}'.format(x=x, cv=cv) for x in sort_version(xs)]
+            boost_switches[cv] = nothing + \
+                ['boost-{x}-gcc-{cv}'.format(x=x, cv=cv)
+                 for x in sort_version(xs)]
 
         compilers = []
         for cv in gcc_vers:
@@ -627,12 +654,14 @@ class Compilers(object):
 
             # pedantic
             if cmpver(cv, '>=', '4.5.4'):
-                switches += ["cpp-no-pedantic", "cpp-pedantic", "cpp-pedantic-errors"]
+                switches += ["cpp-no-pedantic",
+                             "cpp-pedantic", "cpp-pedantic-errors"]
 
             # head specific
             if cv == 'head':
                 display_name = 'gcc HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/g++ --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/gcc-head/bin/g++ --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'gcc'
                 version_command = ['/bin/echo', '{cv}']
@@ -668,7 +697,8 @@ class Compilers(object):
         return compilers
 
     def make_clang_c(self):
-        clang_vers = sort_version(get_generic_versions('clang', with_head=True), reverse=True)
+        clang_vers = sort_version(get_generic_versions(
+            'clang', with_head=True), reverse=True)
 
         compilers = []
         for cv in clang_vers:
@@ -680,11 +710,13 @@ class Compilers(object):
             initial_checked += ['warning']
 
             # C
-            switches += ['std-c-default', 'c89', 'gnu89', 'c99', 'gnu99', 'c11', 'gnu11']
+            switches += ['std-c-default', 'c89',
+                         'gnu89', 'c99', 'gnu99', 'c11', 'gnu11']
             initial_checked += [switches[-1]]
 
             # pedantic
-            switches += ['cpp-no-pedantic', 'cpp-pedantic', 'cpp-pedantic-errors']
+            switches += ['cpp-no-pedantic',
+                         'cpp-pedantic', 'cpp-pedantic-errors']
 
             # -fansi-escape-codes
             if cmpver(cv, '>=', '3.4'):
@@ -697,14 +729,15 @@ class Compilers(object):
                 '/opt/wandbox/clang-{cv}/bin/clang',
                 '-oprog.exe',
                 '-fcolor-diagnostics'
-                ] + ansi_escape_codes + [
+            ] + ansi_escape_codes + [
                 'prog.c'
             ]
 
             # head specific
             if cv == 'head':
                 display_name = 'clang HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'clang'
                 version_command = ['/bin/echo', '{cv}']
@@ -729,7 +762,8 @@ class Compilers(object):
         return compilers
 
     def make_clang_pp(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
         clang_vers = ['head']
 
         boost_ver_set = set(get_boost_versions_with_head())
@@ -742,7 +776,9 @@ class Compilers(object):
                     continue
                 xs.append('{bv}'.format(bv=bv))
             nothing = ['boost-nothing-clang-{cv}-header'.format(cv=cv)]
-            boost_switches[cv] = nothing + ['boost-{x}-clang-{cv}-header'.format(x=x, cv=cv) for x in sort_version(xs)]
+            boost_switches[cv] = nothing + \
+                ['boost-{x}-clang-{cv}-header'.format(x=x, cv=cv)
+                 for x in sort_version(xs)]
 
         compilers = []
         for cv in clang_vers:
@@ -769,7 +805,7 @@ class Compilers(object):
             compile_command = [
                 '/opt/wandbox/clang-{cv}/bin/clang',
                 '-fcolor-diagnostics'
-                ] + ansi_escape_codes + [
+            ] + ansi_escape_codes + [
                 '-E']
 
             compile_command += ['prog.cc']
@@ -777,7 +813,8 @@ class Compilers(object):
             # head specific
             if cv == 'head':
                 display_name = 'clang HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'clang'
                 version_command = ['/bin/echo', '{cv}']
@@ -803,8 +840,10 @@ class Compilers(object):
         return compilers
 
     def make_clang(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
-        clang_vers = sort_version(get_generic_versions('clang', with_head=True), reverse=True)
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
+        clang_vers = sort_version(get_generic_versions(
+            'clang', with_head=True), reverse=True)
 
         boost_ver_set = set(get_boost_versions_with_head())
         # boost versions
@@ -816,7 +855,9 @@ class Compilers(object):
                     continue
                 xs.append('{bv}'.format(bv=bv))
             nothing = ['boost-nothing-clang-{cv}'.format(cv=cv)]
-            boost_switches[cv] = nothing + ['boost-{x}-clang-{cv}'.format(x=x, cv=cv) for x in sort_version(xs)]
+            boost_switches[cv] = nothing + \
+                ['boost-{x}-clang-{cv}'.format(x=x, cv=cv)
+                 for x in sort_version(xs)]
 
         compilers = []
         for cv in clang_vers:
@@ -838,7 +879,8 @@ class Compilers(object):
                 switches += ['sprout', 'msgpack']
 
             # C++
-            switches += ['std-c++-default', 'c++98', 'gnu++98', 'c++11', 'gnu++11']
+            switches += ['std-c++-default', 'c++98',
+                         'gnu++98', 'c++11', 'gnu++11']
             if cmpver(cv, '>=', '3.2'):
                 if cmpver(cv, '>=', '3.5.0'):
                     switches += ['c++14', 'gnu++14']
@@ -856,7 +898,8 @@ class Compilers(object):
             initial_checked += [switches[-1]]
 
             # pedantic
-            switches += ['cpp-no-pedantic', 'cpp-pedantic', 'cpp-pedantic-errors']
+            switches += ['cpp-no-pedantic',
+                         'cpp-pedantic', 'cpp-pedantic-errors']
 
             # -fansi-escape-codes
             if cmpver(cv, '>=', '3.4'):
@@ -869,7 +912,7 @@ class Compilers(object):
                 '/opt/wandbox/clang-{cv}/bin/clang++',
                 '-oprog.exe',
                 '-fcolor-diagnostics'
-                ] + ansi_escape_codes + [
+            ] + ansi_escape_codes + [
                 '-I/opt/wandbox/clang-{cv}/include/c++/v1',
                 '-L/opt/wandbox/clang-{cv}/lib',
                 '-Wl,-rpath,/opt/wandbox/clang-{cv}/lib',
@@ -912,7 +955,8 @@ class Compilers(object):
             # head specific
             if cv == 'head':
                 display_name = 'clang HEAD'
-                version_command = ["/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang++ --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    "/bin/sh", "-c", "/opt/wandbox/clang-{cv}/bin/clang++ --version | head -1 | cut -d' ' -f3-"]
             else:
                 display_name = 'clang'
                 version_command = ['/bin/echo', '{cv}']
@@ -937,8 +981,10 @@ class Compilers(object):
         return compilers
 
     def make_zapcc(self):
-        boost_vers = sort_version(set(a for a, _, _ in get_boost_versions_with_head()))
-        zapcc_vers = sort_version(get_generic_versions('zapcc', with_head=False), reverse=True)
+        boost_vers = sort_version(
+            set(a for a, _, _ in get_boost_versions_with_head()))
+        zapcc_vers = sort_version(get_generic_versions(
+            'zapcc', with_head=False), reverse=True)
 
         boost_ver_set = set(get_boost_versions_with_head())
         # boost versions
@@ -950,7 +996,9 @@ class Compilers(object):
                     continue
                 xs.append('{bv}'.format(bv=bv))
             nothing = ['boost-nothing-zapcc-{cv}'.format(cv=cv)]
-            boost_switches[cv] = nothing + ['boost-{x}-zapcc-{cv}'.format(x=x, cv=cv) for x in sort_version(xs)]
+            boost_switches[cv] = nothing + \
+                ['boost-{x}-zapcc-{cv}'.format(x=x, cv=cv)
+                 for x in sort_version(xs)]
 
         compilers = []
         for cv in zapcc_vers:
@@ -971,11 +1019,13 @@ class Compilers(object):
             switches += ['sprout', 'msgpack']
 
             # C++
-            switches += ['std-c++-default', 'c++98', 'gnu++98', 'c++11', 'gnu++11', 'c++14', 'gnu++14', 'c++1z', 'gnu++1z']
+            switches += ['std-c++-default', 'c++98', 'gnu++98', 'c++11',
+                         'gnu++11', 'c++14', 'gnu++14', 'c++1z', 'gnu++1z']
             initial_checked += [switches[-1]]
 
             # pedantic
-            switches += ['cpp-no-pedantic', 'cpp-pedantic', 'cpp-pedantic-errors']
+            switches += ['cpp-no-pedantic',
+                         'cpp-pedantic', 'cpp-pedantic-errors']
 
             # -fansi-escape-codes
             ansi_escape_codes = ['-fansi-escape-codes']
@@ -985,7 +1035,7 @@ class Compilers(object):
                 '/opt/wandbox/zapcc-{cv}/bin/zapcc++',
                 '-oprog.exe',
                 '-fcolor-diagnostics'
-                ] + ansi_escape_codes + [
+            ] + ansi_escape_codes + [
                 '-I/opt/wandbox/clang-head/include/c++/v1',
                 '-L/opt/wandbox/clang-head/lib',
                 '-Wl,-rpath,/opt/wandbox/clang-head/lib',
@@ -1027,12 +1077,14 @@ class Compilers(object):
         return compilers
 
     def make_mono(self):
-        mono_vers = sort_version(get_generic_versions('mono', with_head=True), reverse=True)
+        mono_vers = sort_version(get_generic_versions(
+            'mono', with_head=True), reverse=True)
         compilers = []
         for cv in mono_vers:
             if cv == 'head':
                 display_name = 'mcs HEAD'
-                version_command = ['/bin/sh', '-c', "/opt/wandbox/mono-{cv}/bin/mcs --version | head -1 | cut -d' ' -f5"]
+                version_command = [
+                    '/bin/sh', '-c', "/opt/wandbox/mono-{cv}/bin/mcs --version | head -1 | cut -d' ' -f5"]
             else:
                 display_name = 'mcs'
                 version_command = ['/bin/echo', '{cv}']
@@ -1083,12 +1135,14 @@ class Compilers(object):
         return compilers
 
     def make_erlang(self):
-        erlang_vers = sort_version(get_generic_versions('erlang', with_head=True), reverse=True)
+        erlang_vers = sort_version(get_generic_versions(
+            'erlang', with_head=True), reverse=True)
         compilers = []
         for cv in erlang_vers:
             if cv == 'head':
                 display_name = 'erlang HEAD'
-                version_command = ['/bin/bash', '-c', 'cat `find /opt/wandbox/erlang-head/lib/erlang/releases/ -name OTP_VERSION | head -n 1`']
+                version_command = [
+                    '/bin/bash', '-c', 'cat `find /opt/wandbox/erlang-head/lib/erlang/releases/ -name OTP_VERSION | head -n 1`']
             else:
                 display_name = 'erlang'
                 version_command = ['/bin/echo', '{cv}']
@@ -1120,7 +1174,8 @@ class Compilers(object):
         return compilers
 
     def make_elixir(self):
-        elixir_vers = sort_version(get_generic_versions('elixir', with_head=True), reverse=True)
+        elixir_vers = sort_version(get_generic_versions(
+            'elixir', with_head=True), reverse=True)
         compilers = []
         for cv in elixir_vers:
             if cv == 'head':
@@ -1129,7 +1184,8 @@ class Compilers(object):
                 display_name = 'elixir'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/elixir-{cv}/bin/run-elixir.sh --version | tail -n 1 | cut -d' ' -f2-"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/elixir-{cv}/bin/run-elixir.sh --version | tail -n 1 | cut -d' ' -f2-"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1153,7 +1209,8 @@ class Compilers(object):
         return compilers
 
     def make_ghc(self):
-        ghc_vers = sort_version(get_generic_versions('ghc', with_head=True), reverse=True)
+        ghc_vers = sort_version(get_generic_versions(
+            'ghc', with_head=True), reverse=True)
         compilers = []
         for cv in ghc_vers:
             if cv == 'head':
@@ -1162,7 +1219,8 @@ class Compilers(object):
                 display_name = 'ghc'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/ghc-{cv}/bin/ghc --version | cut -d' ' -f8"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/ghc-{cv}/bin/ghc --version | cut -d' ' -f8"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1185,7 +1243,8 @@ class Compilers(object):
         return compilers
 
     def make_dmd(self):
-        dmd_vers = sort_version(get_generic_versions('dmd', with_head=True), reverse=True)
+        dmd_vers = sort_version(get_generic_versions(
+            'dmd', with_head=True), reverse=True)
         compilers = []
         for cv in dmd_vers:
             if cv == 'head':
@@ -1194,7 +1253,8 @@ class Compilers(object):
                 display_name = 'dmd'
 
             if cv == 'head':
-                version_command = ['/bin/sh', '-c', "/opt/wandbox/dmd-{cv}/linux/bin64/dmd --version | head -1 | cut -d' ' -f4"]
+                version_command = [
+                    '/bin/sh', '-c', "/opt/wandbox/dmd-{cv}/linux/bin64/dmd --version | head -1 | cut -d' ' -f4"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1226,7 +1286,8 @@ class Compilers(object):
                 display_name = 'gdc'
 
             if cv == 'head':
-                version_command = ['/bin/sh', '-c', "/opt/wandbox/gdc-{cv}/bin/gdc --version | head -1 | cut -d' ' -f3-"]
+                version_command = [
+                    '/bin/sh', '-c', "/opt/wandbox/gdc-{cv}/bin/gdc --version | head -1 | cut -d' ' -f3-"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1283,7 +1344,8 @@ class Compilers(object):
         for cv in openjdk_vers:
             if cv == 'head':
                 display_name = 'OpenJDK HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/openjdk-{cv}/bin/java -version 2>&1 | head -n1 | cut -d' ' -f3- | cut -d'\"' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/openjdk-{cv}/bin/java -version 2>&1 | head -n1 | cut -d' ' -f3- | cut -d'\"' -f2"]
             else:
                 display_name = 'OpenJDK'
                 version_command = ['/bin/echo', '{cv}']
@@ -1307,7 +1369,8 @@ class Compilers(object):
         return compilers
 
     def make_rust(self):
-        rust_vers = sort_version(get_generic_versions('rust', with_head=True), reverse=True)
+        rust_vers = sort_version(get_generic_versions(
+            'rust', with_head=True), reverse=True)
         compilers = []
         for cv in rust_vers:
             if cv == 'head':
@@ -1316,7 +1379,8 @@ class Compilers(object):
                 display_name = 'rust'
 
             if cv == 'head':
-                version_command = ['/bin/sh', '-c', "/opt/wandbox/rust-{cv}/bin/rustc --version | head -1 | cut -d' ' -f2-"]
+                version_command = [
+                    '/bin/sh', '-c', "/opt/wandbox/rust-{cv}/bin/rustc --version | head -1 | cut -d' ' -f2-"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1339,7 +1403,8 @@ class Compilers(object):
         return compilers
 
     def make_cpython(self):
-        cpython_vers = ['head', '2.7-head'] + sort_version(get_generic_versions('cpython', with_head=False), reverse=True)
+        cpython_vers = ['head', '2.7-head'] + sort_version(
+            get_generic_versions('cpython', with_head=False), reverse=True)
         compilers = []
         for cv in cpython_vers:
             if cv == 'head':
@@ -1359,7 +1424,8 @@ class Compilers(object):
                 python = 'python'
 
             if 'head' in cv:
-                version_command = ["/opt/wandbox/cpython-{cv}/bin/{python}", "-c", "import sys; print(sys.version.split()[0])"]
+                version_command = [
+                    "/opt/wandbox/cpython-{cv}/bin/{python}", "-c", "import sys; print(sys.version.split()[0])"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1392,7 +1458,8 @@ class Compilers(object):
                 display_name = 'ruby'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/ruby-{cv}/bin/ruby --version | cut -d' ' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/ruby-{cv}/bin/ruby --version | cut -d' ' -f2"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1416,7 +1483,8 @@ class Compilers(object):
         return compilers
 
     def make_mruby(self):
-        mruby_vers = sort_version(get_generic_versions('mruby', with_head=True), reverse=True)
+        mruby_vers = sort_version(get_generic_versions(
+            'mruby', with_head=True), reverse=True)
         compilers = []
         for cv in mruby_vers:
             if cv == 'head':
@@ -1425,7 +1493,8 @@ class Compilers(object):
                 display_name = 'mruby'
 
             if cv == 'head':
-                version_command = ['/bin/cat', '/opt/wandbox/mruby-{cv}/VERSION']
+                version_command = ['/bin/cat',
+                                   '/opt/wandbox/mruby-{cv}/VERSION']
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1449,12 +1518,15 @@ class Compilers(object):
         return compilers
 
     def make_scala(self):
-        scala_vers = read_versions('scala-head') + get_generic_versions('scala', with_head=False)
+        scala_vers = read_versions('scala-head') + \
+            get_generic_versions(
+            'scala', with_head=False)
         compilers = []
         for cv in scala_vers:
             if cv[-2:] == '.x':
                 display_name = 'Scala {cv} HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/scala-{cv}/bin/run-scalac.sh -version 2>&1 | cut -d' ' -f4"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/scala-{cv}/bin/run-scalac.sh -version 2>&1 | cut -d' ' -f4"]
             else:
                 display_name = 'Scala'
                 version_command = ['/bin/echo', '{cv}']
@@ -1483,7 +1555,8 @@ class Compilers(object):
         for cv in groovy_vers:
             if cv == 'head':
                 display_name = 'Groovy HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/groovy-{cv}/bin/run-groovy.sh -version | cut -d' ' -f3"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/groovy-{cv}/bin/run-groovy.sh -version | cut -d' ' -f3"]
             else:
                 display_name = 'Groovy'
                 version_command = ['/bin/echo', '{cv}']
@@ -1513,7 +1586,8 @@ class Compilers(object):
         for cv in nodejs_vers:
             if cv == 'head':
                 display_name = 'Node.js HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/nodejs-{cv}/bin/node --version | cut -c 2-"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/nodejs-{cv}/bin/node --version | cut -c 2-"]
             else:
                 display_name = 'Node.js'
                 version_command = ['/bin/echo', '{cv}']
@@ -1537,13 +1611,52 @@ class Compilers(object):
             }, cv=cv))
         return compilers
 
+    def make_deno(self):
+        deno_vers = get_generic_versions('deno', with_head=False)
+
+        switches = [
+            'Allow env',
+            'Allow high-resolution time',
+            'Allow net',
+            'Allow ffi',
+            'Allow read',
+            'Allow run',
+            'Allow write',
+        ]
+
+        compilers = []
+        for cv in deno_vers:
+            display_name = 'Deno'
+            version_command = ['/bin/echo', '{cv}']
+
+            compilers.append(format_value({
+                'name': 'typescript-{cv}',
+                'displayable': True,
+                'language': 'TypeScript',
+                'output-file': 'prog.ts',
+                'compiler-option-raw': False,
+                'compile-command': ['/bin/true'],
+                'version-command': version_command,
+                'switches': switches,
+                'initial-checked': [],
+                'display-name': display_name,
+                'display-compile-command': 'deno run prog.ts',
+                'runtime-option-raw': True,
+                'run-command': ['/opt/wandbox/typescript-{cv}/bin/deno', 'run', 'prog.ts'],
+                'jail-name': 'melpon2-default',
+                'templates': ['deno'],
+            }, cv=cv))
+        return compilers
+
     def make_coffeescript(self):
-        coffeescript_vers = get_generic_versions('coffeescript', with_head=True)
+        coffeescript_vers = get_generic_versions(
+            'coffeescript', with_head=True)
         compilers = []
         for cv in coffeescript_vers:
             if cv == 'head':
                 display_name = 'CoffeeScript HEAD'
-                version_command = ['/bin/cat', '/opt/wandbox/coffeescript-{cv}/bin/VERSION']
+                version_command = [
+                    '/bin/cat', '/opt/wandbox/coffeescript-{cv}/bin/VERSION']
             else:
                 display_name = 'CoffeeScript'
                 version_command = ['/bin/echo', '{cv}']
@@ -1568,7 +1681,8 @@ class Compilers(object):
         return compilers
 
     def make_spidermonkey(self):
-        spidermonkey_vers = get_generic_versions('spidermonkey', with_head=False)
+        spidermonkey_vers = get_generic_versions(
+            'spidermonkey', with_head=False)
         compilers = []
         for cv in spidermonkey_vers:
             display_name = 'SpiderMonkey'
@@ -1599,7 +1713,8 @@ class Compilers(object):
         for cv in swift_vers:
             if cv == 'head':
                 display_name = 'Swift HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/swift-{cv}/usr/bin/swiftc --version | head -n 1 | cut -d' ' -f3-"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/swift-{cv}/usr/bin/swiftc --version | head -n 1 | cut -d' ' -f3-"]
             else:
                 display_name = 'Swift'
                 version_command = ['/bin/echo', '{cv}']
@@ -1632,7 +1747,8 @@ class Compilers(object):
                 display_name = 'perl'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/perl-{cv}/bin/perl -e 'print $^V' | cut -c2-"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/perl-{cv}/bin/perl -e 'print $^V' | cut -c2-"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1665,7 +1781,8 @@ class Compilers(object):
                 display_name = 'php'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/php-{cv}/bin/php --version | head -n 1 | cut -d' ' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/php-{cv}/bin/php --version | head -n 1 | cut -d' ' -f2"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1724,7 +1841,8 @@ class Compilers(object):
                 display_name = 'LuaJIT'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/luajit-{cv}/bin/luajit -v | head -n 1 | cut -d' ' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/luajit-{cv}/bin/luajit -v | head -n 1 | cut -d' ' -f2"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -1757,10 +1875,10 @@ class Compilers(object):
                 display_name = 'sqlite'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/sqlite-{cv}/bin/sqlite3 --version | cut -d' ' -f1,2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/sqlite-{cv}/bin/sqlite3 --version | cut -d' ' -f1,2"]
             else:
                 version_command = ['/bin/echo', '{cv}']
-
 
             compilers.append(format_value({
                 'name': 'sqlite-{cv}',
@@ -1787,7 +1905,8 @@ class Compilers(object):
         for cv in fpc_vers:
             if cv == 'head':
                 display_name = 'Free Pascal HEAD'
-                version_command = ['/opt/wandbox/fpc-{cv}/bin/run-fpc.sh', '-iV']
+                version_command = [
+                    '/opt/wandbox/fpc-{cv}/bin/run-fpc.sh', '-iV']
             else:
                 display_name = 'Free Pascal'
                 version_command = ['/bin/echo', '{cv}']
@@ -1926,7 +2045,8 @@ class Compilers(object):
         for cv in ocaml_vers:
             if cv == 'head':
                 display_name = 'ocaml HEAD'
-                version_command = ['/opt/wandbox/ocaml-{cv}/bin/ocamlc', '--version']
+                version_command = [
+                    '/opt/wandbox/ocaml-{cv}/bin/ocamlc', '--version']
                 switches = []
                 initial_checked = []
             else:
@@ -1959,7 +2079,8 @@ class Compilers(object):
         for cv in go_vers:
             if cv == 'head':
                 display_name = 'go HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/go-{cv}/bin/go version | cut -d' ' -f3,4"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/go-{cv}/bin/go version | cut -d' ' -f3,4"]
             else:
                 display_name = 'go'
                 version_command = ['/bin/echo', '{cv}']
@@ -1990,7 +2111,8 @@ class Compilers(object):
         for cv in sbcl_vers:
             if cv == 'head':
                 display_name = 'sbcl HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/sbcl-{cv}/bin/run-sbcl.sh --version | cut -d' ' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/sbcl-{cv}/bin/run-sbcl.sh --version | cut -d' ' -f2"]
             else:
                 display_name = 'sbcl'
                 version_command = ['/bin/echo', '{cv}']
@@ -2017,7 +2139,8 @@ class Compilers(object):
     def make_bash(self):
         compilers = []
         display_name = 'bash'
-        version_command = ['/bin/sh', '-c', "/bin/bash --version | head -n 1 | cut -d' ' -f4"]
+        version_command = ['/bin/sh', '-c',
+                           "/bin/bash --version | head -n 1 | cut -d' ' -f4"]
 
         compilers.append({
             'name': 'bash',
@@ -2044,7 +2167,8 @@ class Compilers(object):
         for cv in pony_vers:
             if cv == 'head':
                 display_name = 'pony HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/pony-{cv}/bin/ponyc --version | head -n 1 | cut -d' ' -f1"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/pony-{cv}/bin/ponyc --version | head -n 1 | cut -d' ' -f1"]
             else:
                 display_name = 'pony'
                 version_command = ['/bin/echo', '{cv}']
@@ -2074,7 +2198,8 @@ class Compilers(object):
         for cv in crystal_vers:
             if cv == 'head':
                 display_name = 'crystal HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/crystal-{cv}/bin/crystal version 2>&1 | tail -n 1 | cut -d' ' -f2-4"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/crystal-{cv}/bin/crystal version 2>&1 | tail -n 1 | cut -d' ' -f2-4"]
             else:
                 display_name = 'crystal'
                 version_command = ['/bin/echo', '{cv}']
@@ -2104,7 +2229,8 @@ class Compilers(object):
         for cv in nim_vers:
             if cv == 'head':
                 display_name = 'nim HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/nim-{cv}/bin/nim --version 2>&1 | head -n 1 | cut -d' ' -f3,4"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/nim-{cv}/bin/nim --version 2>&1 | head -n 1 | cut -d' ' -f3,4"]
             else:
                 display_name = 'nim'
                 version_command = ['/bin/echo', '{cv}']
@@ -2134,7 +2260,8 @@ class Compilers(object):
         for cv in openssl_vers:
             if cv == 'head':
                 display_name = 'OpenSSL HEAD'
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/openssl-{cv}/bin/with-env.sh openssl version | cut -d' ' -f2"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/openssl-{cv}/bin/with-env.sh openssl version | cut -d' ' -f2"]
             else:
                 display_name = 'OpenSSL'
                 version_command = ['/bin/echo', '{cv}']
@@ -2181,12 +2308,14 @@ class Compilers(object):
         return compilers
 
     def make_fsharp(self):
-        fsharp_vers = sort_version(get_generic_versions('fsharp', with_head=True), reverse=True)
+        fsharp_vers = sort_version(get_generic_versions(
+            'fsharp', with_head=True), reverse=True)
         compilers = []
         for cv in fsharp_vers:
             if cv == 'head':
                 display_name = 'fsharpc HEAD'
-                version_command = ['/bin/cat', '/opt/wandbox/fsharp-{cv}/VERSION']
+                version_command = ['/bin/cat',
+                                   '/opt/wandbox/fsharp-{cv}/VERSION']
             else:
                 display_name = 'fsharpc'
                 version_command = ['/bin/echo', '{cv}']
@@ -2220,7 +2349,8 @@ class Compilers(object):
                 display_name = 'cmake'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/cmake-{cv}/bin/cmake --version | head -1 | cut -d' ' -f3"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/cmake-{cv}/bin/cmake --version | head -1 | cut -d' ' -f3"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -2244,12 +2374,14 @@ class Compilers(object):
         return compilers
 
     def make_dotnetcore(self):
-        dotnetcore_vers = sort_version(get_generic_versions('dotnetcore', with_head=True), reverse=True)
+        dotnetcore_vers = sort_version(get_generic_versions(
+            'dotnetcore', with_head=True), reverse=True)
         compilers = []
         for cv in dotnetcore_vers:
             if cv == 'head':
                 display_name = '.NET Core HEAD'
-                version_command = ['/opt/wandbox/dotnetcore-{cv}/dotnet', '--version']
+                version_command = [
+                    '/opt/wandbox/dotnetcore-{cv}/dotnet', '--version']
             else:
                 display_name = '.NET Core'
                 version_command = ['/bin/echo', '{cv}']
@@ -2343,7 +2475,8 @@ class Compilers(object):
                 display_name = 'Julia'
 
             if cv == 'head':
-                version_command = ['/bin/bash', '-c', "/opt/wandbox/julia-head/bin/julia --version | head -1 | cut -d' ' -f3"]
+                version_command = [
+                    '/bin/bash', '-c', "/opt/wandbox/julia-head/bin/julia --version | head -1 | cut -d' ' -f3"]
             else:
                 version_command = ['/bin/echo', '{cv}']
 
@@ -2454,6 +2587,7 @@ def make_config():
         'compilers': compilers,
         'templates': templates,
     }
+
 
 if __name__ == '__main__':
     print(json.dumps(make_config(), indent=4))
