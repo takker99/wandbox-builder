@@ -421,6 +421,48 @@ class Switches(object):
                 'insert-position': 1,
                 'runtime': True,
             },
+            'deno-allow-env': {
+                'flags': ['--allow-env'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow access to environment variables',
+            },
+            'deno-allow-hrtime': {
+                'flags': ['--allow-hrtime'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow high-resolution time measurement',
+            },
+            'deno-allow-ffi': {
+                'flags': ['--allow-ffi'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow loading of dynamic libraries',
+            },
+            'deno-allow-read': {
+                'flags': ['--allow-read'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow file system read access',
+            },
+            'deno-allow-run': {
+                'flags': ['--allow-run'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow running subprocesses',
+            },
+            'deno-allow-write': {
+                'flags': ['--allow-write'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow file system write access',
+            },
+            'deno-unstable': {
+                'flags': ['--unstable'],
+                'insert-position': 0,
+                'runtime': True,
+                'display-name': 'Allow using unstable API',
+            },
             'delphi-mode': {
                 'flags': ['-Mdelphi'],
                 'display-name': 'Delphi 7 mode',
@@ -1615,13 +1657,13 @@ class Compilers(object):
         deno_vers = get_generic_versions('deno', with_head=False)
 
         switches = [
-            'Allow env',
-            'Allow high-resolution time',
-            'Allow net',
-            'Allow ffi',
-            'Allow read',
-            'Allow run',
-            'Allow write',
+            'deno-allow-env',
+            'deno-allow-hrtime',
+            'deno-allow-ffi',
+            'deno-allow-read',
+            'deno-allow-run',
+            'deno-allow-write',
+            'deno-unstable',
         ]
 
         compilers = []
@@ -1630,7 +1672,7 @@ class Compilers(object):
             version_command = ['/bin/echo', '{cv}']
 
             compilers.append(format_value({
-                'name': 'typescript-{cv}',
+                'name': 'deno-{cv}',
                 'displayable': True,
                 'language': 'TypeScript',
                 'output-file': 'prog.ts',
@@ -1642,7 +1684,7 @@ class Compilers(object):
                 'display-name': display_name,
                 'display-compile-command': 'deno run prog.ts',
                 'runtime-option-raw': True,
-                'run-command': ['/opt/wandbox/typescript-{cv}/bin/deno', 'run', 'prog.ts'],
+                'run-command': ['/opt/wandbox/deno-{cv}/bin/deno', 'run', 'prog.ts'],
                 'jail-name': 'melpon2-default',
                 'templates': ['deno'],
             }, cv=cv))
@@ -2524,6 +2566,7 @@ class Compilers(object):
             self.make_scala() +
             self.make_groovy() +
             self.make_nodejs() +
+            self.make_deno() +
             self.make_coffeescript() +
             self.make_spidermonkey() +
             self.make_swift() +

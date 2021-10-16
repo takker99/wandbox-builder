@@ -1,1 +1,2 @@
-console.log("Welcome to Deno!");
+var n: string = "hello";
+console.log(n);
